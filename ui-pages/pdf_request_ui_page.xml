@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    UI Page: PDF Request
+    Name: pdf_request
+    Description: Genera y descarga PDF de solicitudes sin cerrar automáticamente el popup
+-->
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide">
+    <script type="text/javascript" src="html2pdf.js.jsdbx"></script>
+    <script type="text/javascript" src="download_pdf.js.jsdbx"></script>
+
+    <g:evaluate var="requestRecord" jelly="true" object="true">
+        var sysparm_request_id = gs.action.getGlideURI().getMap().get('sysparm_request_id');
+        var requestRecord = new GlideRecord('sc_request');
+        requestRecord.get("sys_id", sysparm_request_id);
+        requestRecord.query();
+        requestRecord;
+    </g:evaluate>
+
+    <g:evaluate var="ritms" jelly="true" object="true">
+        var sysparm_request_id = gs.action.getGlideURI().getMap().get('sysparm_request_id');
+        var ritms = new GlideRecord('sc_req_item');
+        ritms.addQuery('request', sysparm_request_id);
+        ritms.orderBy('number');
+        ritms.query();
+        ritms;
+    </g:evaluate>
+
+    <head>
+        <title>Detalle de Solicitud ${requestRecord.getDisplayValue('number')}</title>
+
+        <style>
+            * {font-family: Arial, Helvetica, sans-serif;}
+
+            body {
+                margin: 0;
+                padding: 0px;
+                background: white;
+                color: #1a1a1a;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-left: auto;
+                margin-right: auto;
+                background: white;
+            }
+
+            th,
+            td {
+                padding: 10px 14px;
+                text-align: left;
+            }
+
+            th {
+                background: #2c3e50;
+                color: white;
+                font-weight: 600;
+                font-size: 13px;
+            }
+
+            td b {
+                color: #2c3e50;
+                font-weight: 600;
+            }
+
+            .logo {
+                background: #ffffff;
+                padding: 15px;
+            }
+
+            #numeroReporte {
+                font-size: 32px;
+                color: #2c3e50;
+                font-weight: 700;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .section-header {
+                background: #2c3e50;
+                color: white;
+                padding: 10px 16px;
+                font-weight: 600;
+                font-size: 13px;
+                text-align: left;
+            }
+
+            .spacer {
+                height: 15px;
+                border: none;
+                background: transparent;
+            }
+
+            /* Estilos para el mensaje de confirmación */
+            #statusMessage {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: #27ae60;
+                color: white;
+                padding: 15px;
+                text-align: center;
+                font-size: 16px;
+                font-weight: 600;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                z-index: 9999;
+                display: none;
+            }
+
+            #statusMessage.show {
+                display: block;
+            }
+
+            #statusMessage button {
+                background: white;
+                color: #27ae60;
+                border: none;
+                padding: 8px 20px;
+                margin-left: 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 14px;
+            }
+
+            #statusMessage button:hover {
+                background: #f0f0f0;
+            }
+
+            .loading {
+                text-align: center;
+                padding: 20px;
+                font-size: 16px;
+                color: #2c3e50;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Mensaje de estado -->
+        <div id="statusMessage">
+            <span id="messageText">Generando PDF...</span>
+            <button onclick="cerrarVentana()" style="display: none;" id="closeBtn">Cerrar Ventana</button>
+        </div>
+
+        <div class="loading" id="loadingMessage">
+            Generando PDF, por favor espere...
+        </div>
+
+        <j:if test="${requestRecord.next()}">
+            <table id="pdfContent" style="display: none;">
+
+                <tr>
+                    <td class="logo" rowspan="2">
+                        <div class="imagen">
+                            <img src="https://ipadedev.service-now.com/sys_attachment.do?sys_id=e1aa60323b8172104fc12911a3e45a10" alt="Logo" />
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td id="numeroReporte">
+                        ${requestRecord.getDisplayValue('number')}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><b>Solicitado por:</b></td>
+                    <td>${requestRecord.getDisplayValue('opened_by.name')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Fecha:</b></td>
+                    <td>${requestRecord.getDisplayValue('opened_at')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Asignado a:</b></td>
+                    <td>${requestRecord.getDisplayValue('assigned_to')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Grupo asignado:</b></td>
+                    <td>${requestRecord.getDisplayValue('assignment_group')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Estado:</b></td>
+                    <td>${requestRecord.getDisplayValue('state')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Etapa:</b></td>
+                    <td>${requestRecord.getDisplayValue('stage')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Descripción corta:</b></td>
+                    <td>${requestRecord.getDisplayValue('short_description')}</td>
+                </tr>
+
+                <tr>
+                    <td><b>Descripción:</b></td>
+                    <td>${requestRecord.getDisplayValue('description')}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" class="spacer"></td>
+                </tr>
+
+                <tr>
+                    <th colspan="3" class="section-header">ARTÍCULOS DE SOLICITUD</th>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="padding:0; border:none;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <th style="width:25%;">Número</th>
+                                <th style="width:50%;">Artículo</th>
+                                <th style="width:25%;">Precio</th>
+                            </tr>
+                            <j:while test="${ritms.next()}">
+                                <tr>
+                                    <td>${ritms.getDisplayValue('number')}</td>
+                                    <td>${ritms.getDisplayValue('cat_item')}</td>
+                                    <td>${ritms.getDisplayValue('price')}</td>
+                                </tr>
+                            </j:while>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" class="spacer"></td>
+                </tr>
+
+                <g:evaluate var="jvar_approvers" jelly="true" object="true">
+                    var requestId = requestRecord.getValue('sys_id');
+                    var approvers = new GlideRecord('sysapproval_approver');
+                    approvers.addQuery('sysapproval', requestId);
+                    approvers.orderBy('order');
+                    approvers.query();
+                    approvers;
+                </g:evaluate>
+
+                <tr>
+                    <th colspan="3" class="section-header">Aprobadores</th>
+                </tr>
+
+                <j:choose>
+                    <j:when test="${jvar_approvers.hasNext()}">
+                        <tr>
+                            <td colspan="3" style="padding:0; border:none;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <th style="width: 25%;">Aprobador</th>
+                                        <th style="width: 25%;">Estado</th>
+                                        <th style="width: 25%;">Fecha de Aprobación</th>
+                                        <th style="width: 25%;">Comentarios</th>
+                                    </tr>
+                                    <j:while test="${jvar_approvers.next()}">
+                                        <tr>
+                                            <td>${jvar_approvers.getDisplayValue('approver')}</td>
+                                            <td>${jvar_approvers.getDisplayValue('state')}</td>
+                                            <td>${jvar_approvers.getDisplayValue('sys_updated_on')}</td>
+                                            <td>${jvar_approvers.getDisplayValue('comments')}</td>
+                                        </tr>
+                                    </j:while>
+                                </table>
+                            </td>
+                        </tr>
+                    </j:when>
+                    <j:otherwise>
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 20px; color: #666;">
+                                No hay aprobadores registrados para esta solicitud.
+                            </td>
+                        </tr>
+                    </j:otherwise>
+                </j:choose>
+
+            </table>
+        </j:if>
+
+    </body>
+
+    <script type="text/javascript">
+        function mostrarMensaje(texto, mostrarBoton) {
+            var statusMsg = document.getElementById('statusMessage');
+            var messageText = document.getElementById('messageText');
+            var closeBtn = document.getElementById('closeBtn');
+
+            messageText.textContent = texto;
+            statusMsg.className = 'show';
+
+            if (mostrarBoton) {
+                closeBtn.style.display = 'inline-block';
+            } else {
+                closeBtn.style.display = 'none';
+            }
+        }
+
+        function cerrarVentana() {
+            window.close();
+        }
+
+        function recargarVentanaPadre() {
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                }
+            } catch(e) {
+                console.log('No se pudo recargar la ventana padre:', e.message);
+            }
+        }
+
+        window.onload = function() {
+            mostrarMensaje('Generando PDF, por favor espere...', false);
+
+            var element = document.getElementById('pdfContent');
+            var requestNumber = '${requestRecord.getDisplayValue("number")}';
+            var filename = 'Solicitud_' + requestNumber + '.pdf';
+
+            var opt = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, logging: false },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Mostrar el contenido antes de generar el PDF
+            element.style.display = 'block';
+            document.getElementById('loadingMessage').style.display = 'none';
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                console.log('PDF descargado exitosamente: ' + filename);
+
+                // Mostrar mensaje de éxito con botón para cerrar
+                mostrarMensaje('✅ PDF descargado exitosamente. Puedes cerrar esta ventana.', true);
+
+                // CAMBIO PRINCIPAL: NO cerrar automáticamente la ventana
+                // El usuario puede cerrar manualmente cuando lo desee
+
+                // Si deseas recargar la ventana padre para ver el attachment,
+                // descomenta la siguiente línea:
+                // recargarVentanaPadre();
+
+            }).catch(function(error) {
+                console.error('Error al generar PDF:', error);
+                mostrarMensaje('❌ Error al generar el PDF. Por favor, inténtelo de nuevo.', true);
+            });
+        };
+    </script>
+</j:jelly>
