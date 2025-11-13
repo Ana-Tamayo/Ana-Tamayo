@@ -22,7 +22,7 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
   - ❌ Eliminado `window.close()` automático después de la descarga
   - ✅ Agregado mensaje de confirmación "PDF descargado exitosamente"
   - ✅ Agregado botón "Cerrar Ventana" para cierre manual
-  - ✅ Recarga de ventana padre ahora es opcional (comentada por defecto)
+  - ✅ Recarga de ventana padre está ACTIVA por defecto (puede deshabilitarse si se desea)
   - Mejorado el flujo del script `window.onload`
   - Agregado manejo de errores con `.catch()` en la promesa de html2pdf
 
@@ -71,8 +71,8 @@ html2pdf().set(opt).from(element).save().then(function() {
     // ✅ NO se cierra automáticamente
     // Usuario puede cerrar manualmente cuando lo desee
 
-    // Recarga opcional (comentada por defecto)
-    // recargarVentanaPadre();
+    // ✅ Recarga automática de ventana padre (ACTIVA)
+    recargarVentanaPadre();
 
 }).catch(function(error) {
     // ✅ Manejo de errores mejorado

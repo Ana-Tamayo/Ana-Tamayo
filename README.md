@@ -139,17 +139,19 @@ var uiPageSysId = 'TU_SYS_ID_AQUI'; // Reemplaza con el sys_id de tu UI Page
 
 ## ⚙️ Configuración Opcional
 
-### Habilitar Recarga Automática de la Ventana Padre
-Si deseas que la ventana padre se recargue automáticamente (para ver el attachment adjuntado), descomenta esta línea en `pdf_request_ui_page.xml`:
+### Deshabilitar Recarga Automática de la Ventana Padre
+Por defecto, la ventana padre **SÍ se recarga automáticamente** para que puedas ver el attachment adjuntado.
+
+Si deseas **DESHABILITAR** la recarga automática, comenta esta línea en `pdf_request_ui_page.xml`:
 
 ```javascript
-// Línea ~310
-// recargarVentanaPadre();
+// Línea ~349
+recargarVentanaPadre();
 ```
 
 Cámbiala a:
 ```javascript
-recargarVentanaPadre();
+// recargarVentanaPadre();
 ```
 
 ### Ajustar Tiempo de Recarga en UI Action

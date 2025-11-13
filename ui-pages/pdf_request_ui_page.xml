@@ -345,9 +345,8 @@
                 // CAMBIO PRINCIPAL: NO cerrar automáticamente la ventana
                 // El usuario puede cerrar manualmente cuando lo desee
 
-                // Si deseas recargar la ventana padre para ver el attachment,
-                // descomenta la siguiente línea:
-                // recargarVentanaPadre();
+                // Recargar la ventana padre para ver el attachment adjuntado
+                recargarVentanaPadre();
 
             }).catch(function(error) {
                 console.error('Error al generar PDF:', error);
